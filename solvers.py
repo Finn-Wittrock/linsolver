@@ -3,6 +3,9 @@
 import numpy as np
 from numpy.typing import NDArray
 
+# Tolerance value for dependency check
+_DEPENDENCY_TOL = 1e-10
+
 
 def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_] | None:
     """Solves a linear system of equations (Ax = b) by Gauss-elimination
@@ -18,7 +21,8 @@ def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
         dependent.
     """
     nn = aa.shape[0]
-    for ii in range(nn - 1):
+    for ii in range(nn):
+
         # Partial pivot
         imax = np.argmax(np.abs(aa[ii:, ii])) + ii
         _swap_rows(aa, ii, imax)
@@ -26,6 +30,14 @@ def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
         # Alternatively, you might use fancy indexing to enforce copy
         # aa[[ii, imax]] = aa[[imax, ii]]
         # bb[[ii, imax]] = bb[[imax, ii]]
+
+        # Dependency check
+        # Note: the diagonal element in the last row (aa[nn - 1, nn - 1]) must be checked as well
+        # in order to ensure the back substitution below to work. Therefore, the loop now runs
+        # over all rows including the last one.
+        if np.abs(aa[ii, ii]) < _DEPENDENCY_TOL:
+            return None
+
         for jj in range(ii + 1, nn):
             coeff = -aa[jj, ii] / aa[ii, ii]
             aa[jj, ii:] += coeff * aa[ii, ii:]
