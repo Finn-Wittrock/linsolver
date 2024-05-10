@@ -19,6 +19,13 @@ def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
     """
     nn = aa.shape[0]
     for ii in range(nn - 1):
+        # Partial pivot
+        imax = np.argmax(np.abs(aa[ii:, ii])) + ii
+        _swap_rows(aa, ii, imax)
+        _swap_rows(bb, ii, imax)
+        # Alternatively, you might use fancy indexing to enforce copy
+        # aa[[ii, imax]] = aa[[imax, ii]]
+        # bb[[ii, imax]] = bb[[imax, ii]]
         for jj in range(ii + 1, nn):
             coeff = -aa[jj, ii] / aa[ii, ii]
             aa[jj, ii:] += coeff * aa[ii, ii:]
@@ -29,3 +36,12 @@ def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
         # Note: dot product of two arrays of zero size is 0.0
         xx[ii] = (bb[ii] - aa[ii, ii + 1 :] @ xx[ii + 1 :]) / aa[ii, ii]
     return xx
+
+
+def _swap_rows(mtx, irow1, irow2):
+    """Swaps two rows of an array."""
+    if irow1 == irow2:
+        return
+    tmp = mtx[irow1].copy()
+    mtx[irow1] = mtx[irow2]
+    mtx[irow2] = tmp
