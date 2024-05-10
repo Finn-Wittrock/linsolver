@@ -9,8 +9,10 @@ import solvers
 def main() -> None:
     """Main testing function."""
 
-    print("\nTest elimination")
+    print("\nTest elimination (3)")
     test_elimination_3()
+    print("\nTest elimination (4)")
+    test_elimination_4()
     print("\nTest pivot")
     test_pivot_3()
     print("\nTest linear dependency")
@@ -22,6 +24,18 @@ def test_elimination_3() -> None:
     aa = np.array([[2.0, 4.0, 4.0], [5.0, 4.0, 2.0], [1.0, 2.0, -1.0]], dtype=np.float_)
     bb = np.array([1.0, 4.0, 2.0], dtype=np.float_)
     xx_expected = np.array([0.666666666666667, 0.416666666666667, -0.5], dtype=np.float_)
+    xx_gauss = solvers.gaussian_eliminate(aa, bb)
+    _check_result(xx_expected, xx_gauss)
+
+
+def test_elimination_4() -> None:
+    """Tests elimination with 4 variables."""
+    aa = np.array(
+        [[2.0, 7.0, 8.0, 3.0], [0.0, 7.0, 6.0, 9.0], [0.0, 8.0, 5.0, 2.0], [1.0, 5.0, 9.0, 4.0]],
+        dtype=np.float_,
+    )
+    bb = np.array([8.0, 5.0, 8.0, 2.0], dtype=np.float_)
+    xx_expected = np.array([2.03125, 1.53125, -0.8125, -0.09375], dtype=np.float_)
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
     _check_result(xx_expected, xx_gauss)
 
