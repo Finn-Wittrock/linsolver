@@ -46,8 +46,8 @@ def test_lindep_3() -> None:
 
 def _check_result(expected: NDArray[np.float_] | None, obtained: NDArray[np.float_] | None) -> None:
     """Checks results by printing expected and obtained one."""
-    print("Expected:", expected)
-    print("Obtained:", obtained)
+    print(f"Expected: {expected}")
+    print(f"Obtained: {obtained}")
 
 
 if __name__ == "__main__":
