@@ -1,8 +1,9 @@
-#!/usr/bin/env python3
 """Contains routines to test the solvers module"""
 
+from pathlib import Path
 import numpy as np
 from numpy.typing import NDArray
+import pytest
 import solvers
 
 # Absolut tolerance when comparing reals
@@ -11,44 +12,43 @@ ABS_TOL = 1e-10
 # Relative tolerance when comparing reals
 REL_TOL = 1e-10
 
+# Where to find the test data (relative to project folder)
+TEST_DATA_PATH = Path("test/data")
 
-def test_elimination_3() -> None:
-    """Tests elimination with 3 variables."""
-    aa = np.array([[2.0, 4.0, 4.0], [5.0, 4.0, 2.0], [1.0, 2.0, -1.0]], dtype=np.float_)
-    bb = np.array([1.0, 4.0, 2.0], dtype=np.float_)
-    xx_expected = np.array([0.666666666666667, 0.416666666666667, -0.5], dtype=np.float_)
+# Tests which should return a result
+SOLVABLE_TESTS = ["elimination_3", "elimination_4", "pivot_3"]
+
+# Tests which should signalize linear dependency
+LINEARLY_DEPENDENT_TESTS = ["lindep_3"]
+
+
+@pytest.mark.parametrize("testname", SOLVABLE_TESTS)
+def test_solvable_system(testname: str) -> None:
+    """Tests the result of a solvable system"""
+    aa, bb = _get_input(testname + ".in")
+    xx_expected = _get_expected_output(testname + ".out")
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
     assert _check_result(xx_expected, xx_gauss)
 
 
-def test_elimination_4() -> None:
-    """Tests elimination with 4 variables."""
-    aa = np.array(
-        [[2.0, 7.0, 8.0, 3.0], [0.0, 7.0, 6.0, 9.0], [0.0, 8.0, 5.0, 2.0], [1.0, 5.0, 9.0, 4.0]],
-        dtype=np.float_,
-    )
-    bb = np.array([8.0, 5.0, 8.0, 2.0], dtype=np.float_)
-    xx_expected = np.array([2.03125, 1.53125, -0.8125, -0.09375], dtype=np.float_)
+@pytest.mark.parametrize("testname", LINEARLY_DEPENDENT_TESTS)
+def test_linearly_dependent_system(testname: str) -> None:
+    """Tests whether linear dependency is detected"""
+    aa, bb = _get_input(testname + ".in")
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    assert _check_result(xx_expected, xx_gauss)
+    assert _check_result(None, xx_gauss)
 
 
-def test_pivot_3() -> None:
-    """Tests a solution with 3 variables, where pivot is necessary."""
-    aa = np.array([[2.0, 4.0, 4.0], [1.0, 2.0, -1.0], [5.0, 4.0, 2.0]])
-    bb = np.array([1.0, 2.0, 4.0])
-    xx_expected = np.array([0.666666666666667, 0.416666666666667, -0.5])
-    xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    assert _check_result(xx_expected, xx_gauss)
+def _get_input(infile: str) -> tuple[NDArray[np.float_], NDArray[np.float_]]:
+    """Reads test input data from a file"""
+    data = np.loadtxt(TEST_DATA_PATH / infile)
+    nn = data.shape[1]
+    return data[:nn, :], data[nn, :]
 
 
-def test_lindep_3() -> None:
-    """Tests a linearly dependent system wit three variables."""
-    aa = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]])
-    bb = np.array([1.0, 2.0, 3.0])
-    xx_expected = None
-    xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    assert _check_result(xx_expected, xx_gauss)
+def _get_expected_output(outfile: str) -> NDArray[np.float_]:
+    """Reads the expected test output from a file"""
+    return np.loadtxt(TEST_DATA_PATH / outfile)
 
 
 def _check_result(expected: NDArray[np.float_] | None, obtained: NDArray[np.float_] | None) -> bool:
