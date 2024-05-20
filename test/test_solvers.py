@@ -5,18 +5,11 @@ import numpy as np
 from numpy.typing import NDArray
 import solvers
 
+# Absolut tolerance when comparing reals
+ABS_TOL = 1e-10
 
-def main() -> None:
-    """Main testing function."""
-
-    print("\nTest elimination (3)")
-    test_elimination_3()
-    print("\nTest elimination (4)")
-    test_elimination_4()
-    print("\nTest pivot")
-    test_pivot_3()
-    print("\nTest linear dependency")
-    test_lindep_3()
+# Relative tolerance when comparing reals
+REL_TOL = 1e-10
 
 
 def test_elimination_3() -> None:
@@ -25,7 +18,7 @@ def test_elimination_3() -> None:
     bb = np.array([1.0, 4.0, 2.0], dtype=np.float_)
     xx_expected = np.array([0.666666666666667, 0.416666666666667, -0.5], dtype=np.float_)
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    _check_result(xx_expected, xx_gauss)
+    assert _check_result(xx_expected, xx_gauss)
 
 
 def test_elimination_4() -> None:
@@ -37,7 +30,7 @@ def test_elimination_4() -> None:
     bb = np.array([8.0, 5.0, 8.0, 2.0], dtype=np.float_)
     xx_expected = np.array([2.03125, 1.53125, -0.8125, -0.09375], dtype=np.float_)
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    _check_result(xx_expected, xx_gauss)
+    assert _check_result(xx_expected, xx_gauss)
 
 
 def test_pivot_3() -> None:
@@ -46,7 +39,7 @@ def test_pivot_3() -> None:
     bb = np.array([1.0, 2.0, 4.0])
     xx_expected = np.array([0.666666666666667, 0.416666666666667, -0.5])
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    _check_result(xx_expected, xx_gauss)
+    assert _check_result(xx_expected, xx_gauss)
 
 
 def test_lindep_3() -> None:
@@ -55,14 +48,14 @@ def test_lindep_3() -> None:
     bb = np.array([1.0, 2.0, 3.0])
     xx_expected = None
     xx_gauss = solvers.gaussian_eliminate(aa, bb)
-    _check_result(xx_expected, xx_gauss)
+    assert _check_result(xx_expected, xx_gauss)
 
 
-def _check_result(expected: NDArray[np.float_] | None, obtained: NDArray[np.float_] | None) -> None:
-    """Checks results by printing expected and obtained one."""
-    print(f"Expected: {expected}")
-    print(f"Obtained: {obtained}")
-
-
-if __name__ == "__main__":
-    main()
+def _check_result(expected: NDArray[np.float_] | None, obtained: NDArray[np.float_] | None) -> bool:
+    """Checks whether expected and obtained results match."""
+    result_ok = False
+    if expected is None and obtained is None:
+        result_ok = True
+    elif expected is not None and obtained is not None:
+        result_ok = np.allclose(obtained, expected, atol=ABS_TOL, rtol=REL_TOL)
+    return result_ok
