@@ -27,7 +27,7 @@ def test_solvable_system(testname: str) -> None:
     """Tests the result of a solvable system"""
     aa, bb = _get_input(testname + ".in")
     xx_expected = _get_expected_output(testname + ".out")
-    xx_gauss = solvers.gaussian_eliminate(aa, bb)
+    xx_gauss = solvers.solve(aa, bb)
     assert _check_result(xx_expected, xx_gauss)
 
 
@@ -35,7 +35,7 @@ def test_solvable_system(testname: str) -> None:
 def test_linearly_dependent_system(testname: str) -> None:
     """Tests whether linear dependency is detected"""
     aa, bb = _get_input(testname + ".in")
-    xx_gauss = solvers.gaussian_eliminate(aa, bb)
+    xx_gauss = solvers.solve(aa, bb)
     assert _check_result(None, xx_gauss)
 
 
