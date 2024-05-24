@@ -8,7 +8,7 @@ _DEPENDENCY_TOL = 1e-10
 
 
 def solve(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
-    """Solves a linear system of equations (Ax = b) by Gauss-elimination
+    """Solves a linear system of equations (:math:`Ax = b`) by Gauss-elimination
 
     Args:
         aa: Matrix with the coefficients. Shape: (n, n).
@@ -67,14 +67,14 @@ def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np
 
 
 def forward_substitute(lu: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
-    """Solve L @ y = b for a lower triangle matrix via forward substitution.
+    """Solves :math:`L y = b` for a lower triangle matrix via forward substitution.
 
     Args:
         lu: LU-decomposed matrix (as returned by lu_decompose()) containig lower triangle matrix L.
         bb: Right hand side of the equation.
 
     Returns:
-        The solution vector y.
+        The solution vector :math:`y`.
     """
     nn = lu.shape[0]
     solution = np.zeros((nn,), dtype=np.float_)
@@ -84,14 +84,14 @@ def forward_substitute(lu: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
 
 
 def backward_substitute(lu: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
-    """Solve U @ x = b for an upper triangle matrix via backward substitution.
+    """Solves :math:`U  x = b` for an upper triangle matrix via backward substitution.
 
     Args:
         lu: LU-decomposed matrix (as returned by lu_decompose()) containig upper triangle matrix U.
         bb: Right hand side of the equation.
 
     Returns:
-        The solution vector x.
+        The solution vector :math:`x`.
     """
     nn = lu.shape[0]
     solution = np.zeros((nn,), dtype=np.float_)
