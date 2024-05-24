@@ -50,6 +50,76 @@ def gaussian_eliminate(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArra
     return xx
 
 
+def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np.int_]] | None:
+    """Decomposes a non-singular quadratic matrix into LU-form with partial pivoting.
+
+    Args:
+        aa: Matrix to decompose, contains LU-decomposed form on exit.
+
+    Return:
+        Tuple containing the LU-decomposed A matrix and the permutation vector of the row pivots.
+        If matrix was linearly dependent, None is returned.
+    """
+    lu = aa.copy()
+    nn = lu.shape[0]
+    perm = np.arange(nn, dtype=np.int_)
+    swapbuffer = np.arange(nn, dtype=np.float_)
+
+    for ii in range(nn):
+        # Partial pivot
+        imax = np.argmax(np.abs(lu[ii:, ii])) + ii
+        if imax != ii:
+            swapbuffer[:] = lu[ii]
+            lu[ii] = lu[imax]
+            lu[imax] = swapbuffer
+            perm[ii], perm[imax] = perm[imax], perm[ii]
+
+        # Dependency check
+        if np.abs(lu[ii, ii]) < _DEPENDENCY_TOL:
+            return None
+
+        for jj in range(ii + 1, nn):
+            coeff = lu[jj, ii] / lu[ii, ii]
+            lu[jj, ii + 1 :] -= coeff * lu[ii, ii + 1 :]
+            lu[jj, ii] = coeff
+
+    return lu, perm
+
+
+def forward_substitute(lu: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
+    """Solve L @ y = b for a lower triangle matrix via forward substitution.
+
+    Args:
+        lu: LU-decomposed matrix (as returned by lu_decompose()) containig lower triangle matrix L.
+        bb: Right hand side of the equation.
+
+    Returns:
+        The solution vector y.
+    """
+    nn = lu.shape[0]
+    solution = np.zeros((nn,), dtype=np.float_)
+    for ii in range(nn):
+        solution[ii] = bb[ii] - lu[ii, :ii] @ solution[:ii]
+    return solution
+
+
+def backward_substitute(lu: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
+    """Solve U @ x = b for an upper triangle matrix via backward substitution.
+
+    Args:
+        lu: LU-decomposed matrix (as returned by lu_decompose()) containig upper triangle matrix U.
+        bb: Right hand side of the equation.
+
+    Returns:
+        The solution vector x.
+    """
+    nn = lu.shape[0]
+    solution = np.zeros((nn,), dtype=np.float_)
+    for ii in range(nn - 1, -1, -1):
+        solution[ii] = (bb[ii] - lu[ii, ii + 1 :] @ solution[ii + 1 :]) / lu[ii, ii]
+    return solution
+
+
 def _swap_rows(mtx, irow1, irow2):
     """Swaps two rows of an array."""
     if irow1 == irow2:
