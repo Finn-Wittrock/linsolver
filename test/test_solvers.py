@@ -28,15 +28,15 @@ def test_solvable_system(testname: str) -> None:
     aa, bb = _get_input(testname + ".in")
     xx_expected = _get_expected_output(testname + ".out")
     xx_gauss = solvers.solve(aa, bb)
-    assert _check_result(xx_expected, xx_gauss)
+    assert np.allclose(xx_gauss, xx_expected, atol=ABS_TOL, rtol=REL_TOL)
 
 
 @pytest.mark.parametrize("testname", LINEARLY_DEPENDENT_TESTS)
 def test_linearly_dependent_system(testname: str) -> None:
     """Tests whether linear dependency is detected"""
     aa, bb = _get_input(testname + ".in")
-    xx_gauss = solvers.solve(aa, bb)
-    assert _check_result(None, xx_gauss)
+    with pytest.raises(ValueError, match="Linear dependency detected"):
+        solvers.solve(aa, bb)
 
 
 def test_lu_decomposition():
@@ -46,18 +46,16 @@ def test_lu_decomposition():
         [[4.0, 2.0, 1.0], [0.5, 6.0, 8.5], [0.0, 5.0 / 6.0, 0.25]], dtype=np.float_
     )
     perm_expected = np.array([1, 2, 0], dtype=np.int_)
-    obtained = solvers.lu_decompose(aa)
-    assert obtained is not None
-    lu_obtained, perm_obtained = obtained
-    assert _check_result(lu_expected, lu_obtained)
+    lu_obtained, perm_obtained = solvers.lu_decompose(aa)
+    assert np.allclose(lu_expected, lu_obtained, atol=ABS_TOL, rtol=REL_TOL)
     assert np.all(perm_expected == perm_obtained)
 
 
 def test_lindep_lu_decomposition():
     """Tests the LU-decomposition with a linearly dependent 3x3 matrix."""
     aa = np.array([[1.0, 2.0, 3.0], [4.0, 5.0, 6.0], [7.0, 8.0, 9.0]], dtype=np.float_)
-    obtained = solvers.lu_decompose(aa)
-    assert obtained is None
+    with pytest.raises(ValueError, match="Linear dependency detected"):
+        solvers.lu_decompose(aa)
 
 
 def test_forward_substitution():
@@ -92,13 +90,3 @@ def _get_input(infile: str) -> tuple[NDArray[np.float_], NDArray[np.float_]]:
 def _get_expected_output(outfile: str) -> NDArray[np.float_]:
     """Reads the expected test output from a file"""
     return np.loadtxt(TEST_DATA_PATH / outfile)
-
-
-def _check_result(expected: NDArray[np.float_] | None, obtained: NDArray[np.float_] | None) -> bool:
-    """Checks whether expected and obtained results match."""
-    result_ok = False
-    if expected is None and obtained is None:
-        result_ok = True
-    elif expected is not None and obtained is not None:
-        result_ok = np.allclose(obtained, expected, atol=ABS_TOL, rtol=REL_TOL)
-    return result_ok

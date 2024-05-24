@@ -7,7 +7,7 @@ from numpy.typing import NDArray
 _DEPENDENCY_TOL = 1e-10
 
 
-def solve(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_] | None:
+def solve(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_]:
     """Solves a linear system of equations (Ax = b) by Gauss-elimination
 
     Args:
@@ -17,17 +17,18 @@ def solve(aa: NDArray[np.float_], bb: NDArray[np.float_]) -> NDArray[np.float_] 
     Returns:
         Vector xx with the solution of the linear equation or None if the equations are linearly
         dependent.
+
+    Raises:
+        ValueError: if the matrix aa is linearly dependent.
     """
     decomp = lu_decompose(aa)
-    if decomp is None:
-        return None
     lu, perm = decomp
     yy = forward_substitute(lu, bb[perm])
     xx = backward_substitute(lu, yy)
     return xx
 
 
-def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np.int_]] | None:
+def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np.int_]]:
     """Decomposes a non-singular quadratic matrix into LU-form with partial pivoting.
 
     Args:
@@ -35,7 +36,9 @@ def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np
 
     Return:
         Tuple containing the LU-decomposed A matrix and the permutation vector of the row pivots.
-        If matrix was linearly dependent, None is returned.
+
+    Raises:
+        ValueError: if matrix was linearly dependent.
     """
     lu = aa.copy()
     nn = lu.shape[0]
@@ -53,7 +56,7 @@ def lu_decompose(aa: NDArray[np.float_]) -> tuple[NDArray[np.float_], NDArray[np
 
         # Dependency check
         if np.abs(lu[ii, ii]) < _DEPENDENCY_TOL:
-            return None
+            raise ValueError("Linear dependency detected")
 
         for jj in range(ii + 1, nn):
             coeff = lu[jj, ii] / lu[ii, ii]
