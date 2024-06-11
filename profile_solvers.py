@@ -28,7 +28,6 @@ def solve_rdm_linequations(maxdim : int, amountequations : int) -> tuple[list[fl
     return timetosolve, equationdim
 
 
-solve_rdm_linequations(1000,10)
 
 
 
